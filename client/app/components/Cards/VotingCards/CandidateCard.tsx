@@ -6,6 +6,11 @@ import {
   MenuButton,
   MenuItems,
   MenuItem,
+  Dialog,
+  DialogBackdrop,
+  DialogPanel,
+  DialogTitle,
+  DialogDescription,
 } from "@headlessui/react";
 import { AVATARS } from "../../../constants";
 import { useAccount, useSwitchChain, useWriteContract } from "wagmi";
@@ -17,7 +22,70 @@ import { useParams } from "next/navigation";
 import { sepolia } from "viem/chains";
 import { safeIPFSRemove } from "@/app/helpers/ipfsUtils";
 import CandidateDescription from "../../Fragment/CandidateDescription";
-import ConfirmationDialog from "../../Modal/ConfirmationDialog";
+
+// Type for the confirmation dialog props
+interface ConfirmationDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  title: string;
+  description: string;
+  confirmText?: string;
+  cancelText?: string;
+}
+
+// Inline confirmation dialog component
+const InlineConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  title,
+  description,
+  confirmText = 'Confirm',
+  cancelText = 'Cancel',
+}) => {
+  return (
+    <Dialog
+      open={isOpen}
+      onClose={onClose}
+      className="relative z-50"
+    >
+      <DialogBackdrop
+        transition
+        className="fixed inset-0 bg-black/30 duration-300 ease-out data-[closed]:opacity-0"
+      />
+      <div className="fixed inset-0 flex w-screen items-center justify-center p-4">
+        <DialogPanel
+          transition
+          className="max-w-lg rounded-2xl bg-white p-6 shadow-xl duration-300 ease-out data-[closed]:scale-95 data-[closed]:opacity-0"
+        >
+          <DialogTitle className="text-lg font-semibold text-gray-900">
+            {title}
+          </DialogTitle>
+          <DialogDescription className="mt-2 text-sm text-gray-500">
+            {description}
+          </DialogDescription>
+          <div className="mt-6 flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+            >
+              {cancelText}
+            </button>
+            <button
+              type="button"
+              onClick={onConfirm}
+              className="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+            >
+              {confirmText}
+            </button>
+          </div>
+        </DialogPanel>
+      </div>
+    </Dialog>
+  );
+};
 
 const CandidateCard = ({
   candidate,
@@ -169,7 +237,7 @@ const CandidateCard = ({
         )}
       </div>
       
-      <ConfirmationDialog
+      <InlineConfirmationDialog
         isOpen={showConfirmDialog}
         onClose={() => setShowConfirmDialog(false)}
         onConfirm={handleRemoveCandidate}
